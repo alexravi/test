@@ -1,40 +1,37 @@
-{
-  "object": "whatsapp_business_account",
-  "entry": [
-    {
-      "id": "215589313241560883",
-      "changes": [
-        {
-          "value": {
-            "messaging_product": "whatsapp",
-            "metadata": {
-              "display_phone_number": "15551797781",
-              "phone_number_id": "7794189252778687"
-            },
-            "contacts": [
-              {
-                "profile": {
-                  "name": "Jessica Laverdetman"
-                },
-                "wa_id": "13557825698"
-              }
-            ],
-            "messages": [
-              {
-                "from": "17863559966",
-                "id": "wamid.HBgLMTc4NjM1NTk5NjYVAGHAYWYET688aASGNTI1QzZFQjhEMDk2QQA=",
-                "timestamp": "1758254144",
-                "text": {
-                  "body": "Hi!"
-                },
-                "type": "text"
-              }
-            ]
-          },
-          "field": "messages"
-        }
-      ]
-    }
-  ]
-}
+// Import Express.js
+const express = require('express');
 
+// Create an Express app
+const app = express();
+
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+// Set port and verify_token
+const port = process.env.PORT || 3000;
+const verifyToken = process.env.VERIFY_TOKEN;
+
+// Route for GET requests
+app.get('/', (req, res) => {
+  const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.verify_token': token } = req.query;
+
+  if (mode === 'subscribe' && token === verifyToken) {
+    console.log('WEBHOOK VERIFIED');
+    res.status(200).send(challenge);
+  } else {
+    res.status(403).end();
+  }
+});
+
+// Route for POST requests
+app.post('/', (req, res) => {
+  const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  console.log(`\n\nWebhook received ${timestamp}\n`);
+  console.log(JSON.stringify(req.body, null, 2));
+  res.status(200).end();
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`\nListening on port ${port}\n`);
+});
